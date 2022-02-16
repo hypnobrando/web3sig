@@ -6,19 +6,20 @@ import (
 	"testing"
 	"time"
 
+	"github.com/ethereum/go-ethereum/common/hexutil"
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/stretchr/testify/assert"
 )
 
 func TestValid(t *testing.T) {
-	assert.False(t, Valid([]byte("hello"), []byte("incorrect signature"), []byte("incorrect public key")))
+	assert.False(t, Valid("hello", "incorrect signature", "incorrect public key"))
 
 	data, signature, publicKey := testData(t)
 	assert.True(t, Valid(data, signature, publicKey))
 }
 
 func TestRecover(t *testing.T) {
-	_, err := Recover([]byte("invalid bytes"), []byte("invalid signature"))
+	_, err := Recover("invalid bytes", "invalid signature")
 	assert.NotNil(t, err)
 
 	data, signature, _ := testData(t)
@@ -27,7 +28,7 @@ func TestRecover(t *testing.T) {
 	assert.Equal(t, "0x96216849c49358B10257cb55b28eA603c874b05E", address)
 }
 
-func testData(t *testing.T) ([]byte, []byte, []byte) {
+func testData(t *testing.T) (string, string, string) {
 	privateKey, err := crypto.HexToECDSA("fad9c8855b740a0b7ed4c221dbad0f33a83a49cad6b3fe8d5817ac83d38b6a19")
 	if err != nil {
 		log.Fatal(err)
@@ -49,5 +50,5 @@ func testData(t *testing.T) ([]byte, []byte, []byte) {
 		t.Fatal(err)
 	}
 
-	return data, signature, publicKeyBytes
+	return hexutil.Encode(data), hexutil.Encode(signature), hexutil.Encode(publicKeyBytes)
 }

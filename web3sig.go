@@ -1,20 +1,46 @@
 package web3sig
 
 import (
+	"github.com/ethereum/go-ethereum/common/hexutil"
 	"github.com/ethereum/go-ethereum/crypto"
 )
 
-func Valid(data []byte, sig []byte, publicKey []byte) bool {
-	hash := crypto.Keccak256Hash(data)
+func Valid(data string, sig string, publicKey string) bool {
+	decodedData, err := hexutil.Decode(data)
+	if err != nil {
+		return false
+	}
 
-	signatureNoRecoverID := sig[:len(sig)-1]
-	return crypto.VerifySignature(publicKey, hash.Bytes(), signatureNoRecoverID)
+	hash := crypto.Keccak256Hash(decodedData)
+
+	decodedPublicKey, err := hexutil.Decode(publicKey)
+	if err != nil {
+		return false
+	}
+
+	decodedSignature, err := hexutil.Decode(sig)
+	if err != nil {
+		return false
+	}
+
+	signatureNoRecoverID := decodedSignature[:len(decodedSignature)-1]
+	return crypto.VerifySignature(decodedPublicKey, hash.Bytes(), signatureNoRecoverID)
 }
 
-func Recover(data []byte, sig []byte) (string, error) {
-	hash := crypto.Keccak256Hash(data)
+func Recover(data string, sig string) (string, error) {
+	decodedData, err := hexutil.Decode(data)
+	if err != nil {
+		return "", err
+	}
 
-	sigPublicKeyECDSA, err := crypto.SigToPub(hash.Bytes(), sig)
+	decodedSignature, err := hexutil.Decode(sig)
+	if err != nil {
+		return "", err
+	}
+
+	hash := crypto.Keccak256Hash(decodedData)
+
+	sigPublicKeyECDSA, err := crypto.SigToPub(hash.Bytes(), decodedSignature)
 	if err != nil {
 		return "", err
 	}
